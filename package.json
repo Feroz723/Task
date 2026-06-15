@@ -1,12 +1,12 @@
 {
   "name": "halo-task-manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Halo - a design-led offline-first task manager with themes, halo completion motion, and PWA/Capacitor support.",
   "scripts": {
-    "dev": "next dev --hostname 127.0.0.1",
-    "build": "next build",
-    "start": "next start --hostname 127.0.0.1",
+    "dev": "node init && next dev --hostname 127.0.0.1",
+    "build": "node init && next build",
+    "start": "node init && next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "cap:sync": "next build && cap sync",
     "cap:open:android": "cap open android"
