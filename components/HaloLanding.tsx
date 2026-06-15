@@ -350,7 +350,7 @@ export function HaloLanding() {
             <a href="#themes">Themes</a>
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Service</Link>
-            <a href="mailto:amf369785@gmail.com">Support</a>
+            <a href="mailto:amf369786@gmail.com">Support</a>
           </div>
           <p className="footer-copy">
             &copy; {new Date().getFullYear()} Halo Task Manager. Free forever.
