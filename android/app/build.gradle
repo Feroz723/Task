@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
 
+def releaseStorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+def releaseKeyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "release"
+def releaseKeyPassword = System.getenv("ANDROID_KEY_PASSWORD") ?: releaseStorePassword
+
 android {
     namespace "app.halo.taskmanager"
     compileSdk rootProject.ext.compileSdkVersion
@@ -19,9 +23,9 @@ android {
     signingConfigs {
         release {
             storeFile file("release.jks")
-            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-            keyAlias System.getenv("ANDROID_KEY_ALIAS")
-            keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            storePassword releaseStorePassword
+            keyAlias releaseKeyAlias
+            keyPassword releaseKeyPassword
         }
     }
 

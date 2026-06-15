@@ -38,19 +38,51 @@ jobs:
         run: npx cap sync android
 
       - name: Decode keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d '\n\r ' | base64 -d > android/app/release.jks
-          echo "Keystore file size: $(stat -c%s android/app/release.jks) bytes"
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "::error::ANDROID_KEYSTORE_BASE64 is not set"; exit 1; }
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > android/app/release.jks
+          FILE_SIZE=$(stat -c%s android/app/release.jks)
+          echo "Keystore file size: $FILE_SIZE bytes"
+          echo "Keystore SHA256: $(sha256sum android/app/release.jks | cut -d' ' -f1)"
+          if [ "$FILE_SIZE" -lt 1000 ]; then
+            echo "::error::Keystore file is suspiciously small ($FILE_SIZE bytes). The base64 secret may be truncated or corrupted."
+            exit 1
+          fi
 
-      - name: Verify keystore is valid
+      - name: Verify signing secrets
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          set -euo pipefail
+          KEY_ALIAS="${ANDROID_KEY_ALIAS:-release}"
+          KEY_PASSWORD="${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}"
+          test -n "$ANDROID_KEYSTORE_PASSWORD" || (echo "ANDROID_KEYSTORE_PASSWORD is not set" && exit 1)
+          test -n "$KEY_ALIAS" || (echo "ANDROID_KEY_ALIAS is not set" && exit 1)
+          test -n "$KEY_PASSWORD" || (echo "ANDROID_KEY_PASSWORD is not set" && exit 1)
+
           keytool -list -v \
             -keystore android/app/release.jks \
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
-            -alias "$ANDROID_KEY_ALIAS" 2>&1 | head -20
+            -alias "$KEY_ALIAS" > /dev/null
+
+          TEMP_KEYSTORE="$(mktemp /tmp/release-check-XXXXXX.p12)"
+          trap 'rm -f "$TEMP_KEYSTORE"' EXIT
+
+          keytool -importkeystore -noprompt \
+            -srckeystore android/app/release.jks \
+            -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -srcalias "$KEY_ALIAS" \
+            -srckeypass "$KEY_PASSWORD" \
+            -destkeystore "$TEMP_KEYSTORE" \
+            -deststoretype PKCS12 \
+            -deststorepass "$KEY_PASSWORD" > /dev/null
+
+          echo "Keystore alias and private key validated."
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
