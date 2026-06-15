@@ -1004,7 +1004,7 @@ function SettingsView({
       <section className="settings-section compact">
         <div>
           <h2>About Halo</h2>
-          <p style={{ margin: 0, fontSize: "14px", color: "var(--muted)" }}>Version 1.0.2 · support@halotasks.app</p>
+          <p style={{ margin: 0, fontSize: "14px", color: "var(--muted)" }}>Version 1.0.2 · amf369785@gmail.com</p>
           <div style={{ display: "flex", gap: "16px", marginTop: "6px", fontSize: "13px" }}>
             <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: "600" }}>Privacy Policy</a>
             <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: "600" }}>Terms of Service</a>

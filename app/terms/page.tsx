@@ -60,7 +60,7 @@ export default function TermsPage() {
             <p style={paragraphStyle}>
               If you have any questions about these Terms of Service, please contact us at:
               <br />
-              <a href="mailto:support@halotasks.app" style={linkStyle}>support@halotasks.app</a>
+              <a href="mailto:amf369785@gmail.com" style={linkStyle}>amf369785@gmail.com</a>
             </p>
           </section>
         </div>
