@@ -348,7 +348,9 @@ export function HaloLanding() {
             <Link href="/">Open App</Link>
             <a href="#features">Features</a>
             <a href="#themes">Themes</a>
-            <a href="#download">Download</a>
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/terms">Terms of Service</Link>
+            <a href="mailto:support@halotasks.app">Support</a>
           </div>
           <p className="footer-copy">
             &copy; {new Date().getFullYear()} Halo Task Manager. Free forever.

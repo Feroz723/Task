@@ -1,6 +1,6 @@
 {
   "name": "halo-task-manager",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Halo - a design-led offline-first task manager with themes, halo completion motion, and PWA/Capacitor support.",
   "scripts": {
