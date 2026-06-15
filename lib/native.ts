@@ -74,6 +74,11 @@ export async function showNativeRewarded() {
 export function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
+  // Service workers conflict with Capacitor's native asset server —
+  // they intercept fetch requests for bridge scripts and local files,
+  // which can crash the app on startup. Skip registration entirely.
+  if (isNativeCapacitor()) return;
+
   if (process.env.NODE_ENV === "development") {
     navigator.serviceWorker.getRegistrations().then((registrations) => {
       for (const registration of registrations) {
