@@ -70,18 +70,46 @@ jobs:
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
             -alias "$KEY_ALIAS" > /dev/null
 
-          TEMP_KEYSTORE="$(mktemp /tmp/release-check-XXXXXX.p12)"
-          trap 'rm -f "$TEMP_KEYSTORE"' EXIT
+          validate_key_password() {
+            local candidate_password="$1"
+            local temp_dir
+            local temp_keystore
+            local temp_log
+            temp_dir="$(mktemp -d /tmp/release-check-XXXXXX)"
+            temp_keystore="$temp_dir/release-check.p12"
+            temp_log="$temp_dir/keytool.log"
+            if keytool -importkeystore -noprompt \
+              -srckeystore android/app/release.jks \
+              -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
+              -srcalias "$KEY_ALIAS" \
+              -srckeypass "$candidate_password" \
+              -destkeystore "$temp_keystore" \
+              -deststoretype PKCS12 \
+              -deststorepass "$candidate_password" \
+              -destkeypass "$candidate_password" \
+              -destalias "$KEY_ALIAS" > "$temp_log" 2>&1; then
+              rm -rf "$temp_dir"
+              return 0
+            fi
+            cat "$temp_log" >&2
+            rm -rf "$temp_dir"
+            return 1
+          }
 
-          keytool -importkeystore -noprompt \
-            -srckeystore android/app/release.jks \
-            -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
-            -srcalias "$KEY_ALIAS" \
-            -srckeypass "$KEY_PASSWORD" \
-            -destkeystore "$TEMP_KEYSTORE" \
-            -deststoretype PKCS12 \
-            -deststorepass "$KEY_PASSWORD" > /dev/null
+          if validate_key_password "$KEY_PASSWORD"; then
+            EFFECTIVE_KEY_PASSWORD="$KEY_PASSWORD"
+          elif [ "$KEY_PASSWORD" != "$ANDROID_KEYSTORE_PASSWORD" ] && validate_key_password "$ANDROID_KEYSTORE_PASSWORD"; then
+            EFFECTIVE_KEY_PASSWORD="$ANDROID_KEYSTORE_PASSWORD"
+            echo "ANDROID_KEY_PASSWORD secret did not match the private key password."
+            echo "Falling back to ANDROID_KEYSTORE_PASSWORD because the keystore uses the same password for both."
+          else
+            echo "The keystore alias '$KEY_ALIAS' exists, but its private key password does not match the configured secret."
+            echo "Update ANDROID_KEY_PASSWORD to the actual key password, or regenerate the keystore and refresh all Android signing secrets."
+            exit 1
+          fi
 
+          echo "ANDROID_KEY_ALIAS_EFFECTIVE=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_PASSWORD_EFFECTIVE=$EFFECTIVE_KEY_PASSWORD" >> "$GITHUB_ENV"
           echo "Keystore alias and private key validated."
 
       - name: Make gradlew executable
@@ -94,9 +122,12 @@ jobs:
         working-directory: android
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease
+          ANDROID_KEY_ALIAS_FALLBACK: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD_FALLBACK: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          export ANDROID_KEY_ALIAS="${ANDROID_KEY_ALIAS_EFFECTIVE:-$ANDROID_KEY_ALIAS_FALLBACK}"
+          export ANDROID_KEY_PASSWORD="${ANDROID_KEY_PASSWORD_EFFECTIVE:-$ANDROID_KEY_PASSWORD_FALLBACK}"
+          ./gradlew assembleRelease
 
       - name: Upload APK as build artifact
         uses: actions/upload-artifact@v4
