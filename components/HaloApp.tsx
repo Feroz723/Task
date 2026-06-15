@@ -961,7 +961,7 @@ function SettingsView({
 
       <section className="settings-section compact">
         <div>
-          <h2>Launch stats</h2>
+          <h2>Task stats</h2>
           <p>
             {taskCount} tasks, {completedSubtasks}/{totalSubtasks || 0} subtasks, {streak} day streak
           </p>
@@ -994,7 +994,7 @@ function SettingsView({
       <section className="settings-section compact">
         <div>
           <h2>Demo data</h2>
-          <p>Restore the launch-plan sample tasks.</p>
+          <p>Restore default demo tasks.</p>
         </div>
         <button className="icon-button danger" type="button" onClick={onReset} title="Reset demo data">
           <RotateCcw size={19} aria-hidden="true" />
