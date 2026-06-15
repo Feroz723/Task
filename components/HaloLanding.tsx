@@ -291,11 +291,11 @@ export function HaloLanding() {
         <div className="download-content">
           <div>
             <p className="eyebrow">Zero-cost distribution</p>
-            <h2>PWA now. APK when Android signing is ready.</h2>
+            <h2>PWA instantly. APK for Android.</h2>
             <p>
-              The source is configured for static export, Capacitor Android,
-              test AdMob units, and a GitHub Releases APK flow. Try the PWA
-              instantly — no install required.
+              Install the PWA on any device in one tap, or grab the signed
+              Android APK from GitHub Releases. No account, no tracking,
+              no strings attached.
             </p>
           </div>
           <div className="download-actions">
@@ -305,7 +305,7 @@ export function HaloLanding() {
             </Link>
             <a
               className="landing-secondary"
-              href="https://github.com/user/halo-task-manager/releases/latest"
+              href="https://github.com/Feroz723/Task/releases/latest/download/app-release.apk"
               target="_blank"
               rel="noopener noreferrer"
             >
